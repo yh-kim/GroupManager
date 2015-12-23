@@ -6,7 +6,7 @@ package com.enterpaper.groupmanager;
 public class Member {
     private int id;
     private String name;
-    private String department;
+    private String department;  // 개발자, 기획자, 디자인
     private String introduction;
 
     public Member(int id, String name, String department, String introduction){

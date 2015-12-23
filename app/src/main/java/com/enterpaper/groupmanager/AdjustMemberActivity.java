@@ -1,6 +1,7 @@
 package com.enterpaper.groupmanager;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,10 +31,11 @@ import java.util.List;
  * Created by Kim on 2015-12-23.
  */
 public class AdjustMemberActivity extends Activity {
-    RadioButton rbAdjustDeveloper;
+    RadioButton rbAdjustDeveloper, rbAdjustDesigner, rbAdjustPlanner;
     RadioGroup adjustRadioGroup;
     Button btnAdjustMember, btnAdjustMemberCancel;
     Member member;
+    int originId;
     EditText adjustId, adjustName, adjustIntroduction;
 
     @Override
@@ -43,11 +45,36 @@ public class AdjustMemberActivity extends Activity {
 
         initializeLayout();
 
+        // intent에 담은 데이터 가져오기
+        getIntentData();
+
         setListener();
     }
 
-    private void initializeLayout(){
+    private void getIntentData(){
+        Intent itReceive = getIntent();
+        originId = itReceive.getExtras().getInt("id");
+        String name = itReceive.getExtras().getString("name");
+        String department = itReceive.getExtras().getString("department");
+        String introduction = itReceive.getExtras().getString("introduction");
+        member = new Member(originId, name, department, introduction);
+
+        adjustId.setText(originId+"");
+        adjustName.setText(name);
+        adjustIntroduction.setText(introduction);
+        if(department.equals("디자인")){
+            rbAdjustDesigner.setChecked(true);
+        }else if(department.equals("기획자")){
+            rbAdjustPlanner.setChecked(true);
+        }else{
+            rbAdjustDeveloper.setChecked(true);
+        }
+    }
+
+   private void initializeLayout(){
         rbAdjustDeveloper = (RadioButton)findViewById(R.id.rbAdjustDeveloper);
+        rbAdjustDesigner = (RadioButton)findViewById(R.id.rbAdjustDesigner);
+        rbAdjustPlanner = (RadioButton)findViewById(R.id.rbAdjustPlanner);
         adjustRadioGroup = (RadioGroup)findViewById(R.id.adjustRadioGroup);
         btnAdjustMember = (Button)findViewById(R.id.btnAdjustMember);
         btnAdjustMemberCancel = (Button)findViewById(R.id.btnAdjustMemberCancel);
@@ -81,9 +108,12 @@ public class AdjustMemberActivity extends Activity {
                     department = "디자인";
 
                 int id = Integer.valueOf(idText);
-                member = new Member(id, name, department, introduction);
+                member.setId(id);
+                member.setName(name);
+                member.setDepartment(department);
+                member.setIntroduction(introduction);
 
-                new NetworkAddMember().execute();
+                new NetworkAdjustMember().execute();
             }
         });
 
@@ -102,7 +132,7 @@ public class AdjustMemberActivity extends Activity {
     }
 
     // member add HTTP연결 Thread 생성 클래스
-    class NetworkAddMember extends AsyncTask<String, String, Integer> {
+    class NetworkAdjustMember extends AsyncTask<String, String, Integer> {
         private String err_msg = "Network error.";
 
         // JSON에서 받아오는 객체
@@ -151,9 +181,10 @@ public class AdjustMemberActivity extends Activity {
                 List<NameValuePair> name_value = new ArrayList<NameValuePair>();
 
                 http_post = new HttpPost(
-                        "http://54.199.176.234/api/gravity_add_member.php");
+                        "http://54.199.176.234/api/gravity_adjust_member.php");
 
                 // data를 담음
+                name_value.add(new BasicNameValuePair("user_id", originId + ""));
                 name_value.add(new BasicNameValuePair("id", member.getId() + ""));
                 name_value.add(new BasicNameValuePair("name", member.getName() + ""));
                 name_value.add(new BasicNameValuePair("department", member.getDepartment() + ""));

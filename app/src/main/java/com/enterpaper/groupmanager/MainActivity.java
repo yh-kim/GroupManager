@@ -41,7 +41,7 @@ public class MainActivity extends ActionBarActivity {
     ArrayList<Member> arrMember = new ArrayList<>();
     AlertDialog mDialog;
     int count;
-    int selectMember;
+    int selectMemberNum;
 
     @Override
     protected void onResume() {
@@ -107,9 +107,9 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 // 멤버 추가
-                Intent itAddMember = new Intent(getApplicationContext(),AddMemberActivity.class);
+                Intent itAddMember = new Intent(getApplicationContext(), AddMemberActivity.class);
                 startActivity(itAddMember);
-                overridePendingTransition(0,0);
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -117,7 +117,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 final CharSequence[] items = {"상태 수정", "멤버 삭제"};
-                selectMember = position;
+                selectMemberNum = position;
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);     // 여기서 this는 Activity의 this
 
@@ -127,9 +127,15 @@ public class MainActivity extends ActionBarActivity {
                                 // int형으로 조건 지정
                                 switch (index) {
                                     case 0:
-                                        Intent itAdjstMember = new Intent(getApplicationContext(),AdjustMemberActivity.class);
-                                        startActivityForResult(itAdjstMember, 1);
-                                        overridePendingTransition(0,0);
+                                        Member selectMember = arrMember.get(selectMemberNum);
+                                        Intent itAdjustMember = new Intent(getApplicationContext(), AdjustMemberActivity.class);
+                                        // intent에 데이터 담기
+                                        itAdjustMember.putExtra("id", selectMember.getId());
+                                        itAdjustMember.putExtra("name", selectMember.getName());
+                                        itAdjustMember.putExtra("department", selectMember.getDepartment());
+                                        itAdjustMember.putExtra("introduction", selectMember.getIntroduction());
+                                        startActivity(itAdjustMember);
+                                        overridePendingTransition(0, 0);
                                         break;
                                     case 1:
                                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -166,6 +172,8 @@ public class MainActivity extends ActionBarActivity {
                 return false;
             }
         });
+
+
     }
 
     // member list HTTP연결 Thread 생성 클래스
@@ -200,11 +208,11 @@ public class MainActivity extends ActionBarActivity {
                     for (int index = 0; index < ret_arr.length(); index++) {
                         JSONObject obj_boothIdeas = ret_arr.getJSONObject(index);
 
-                        int id = obj_boothIdeas.getInt("Id");
-                        String name = obj_boothIdeas.getString("Name");
-                        String date = obj_boothIdeas.getString("Date");
-                        String department = obj_boothIdeas.getString("Department");
-                        String introduction = obj_boothIdeas.getString("Introduction");
+                        int id = obj_boothIdeas.getInt("id");
+                        String name = obj_boothIdeas.getString("name");
+                        String date = obj_boothIdeas.getString("date");
+                        String department = obj_boothIdeas.getString("department");
+                        String introduction = obj_boothIdeas.getString("introduction");
 
                         if(introduction.length() >10){
                             introduction = introduction.substring(0,10) +"..";
@@ -303,7 +311,7 @@ public class MainActivity extends ActionBarActivity {
 
             // 지금 코드에서는 result가 0이면 정상적인 상황
             if (result == 0) {
-                arrMember.remove(selectMember);
+                arrMember.remove(selectMemberNum);
                 // Adapter에게 데이터를 넣었으니 갱신하라고 알려줌
                 adapter.notifyDataSetChanged();
 
@@ -332,7 +340,7 @@ public class MainActivity extends ActionBarActivity {
                         "http://54.199.176.234/api/gravity_delete_member.php");
 
                 // data를 담음
-                name_value.add(new BasicNameValuePair("id", arrMember.get(selectMember).getId() + ""));
+                name_value.add(new BasicNameValuePair("id", arrMember.get(selectMemberNum).getId() + ""));
 
                 UrlEncodedFormEntity entityRequest = new UrlEncodedFormEntity(
                         name_value, "UTF-8");

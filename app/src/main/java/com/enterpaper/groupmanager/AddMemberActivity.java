@@ -157,6 +157,7 @@ public class AddMemberActivity extends Activity {
 
                 // data를 담음
                 name_value.add(new BasicNameValuePair("id", member.getId() + ""));
+                name_value.add(new BasicNameValuePair("id", member.getId() + ""));
                 name_value.add(new BasicNameValuePair("name", member.getName() + ""));
                 name_value.add(new BasicNameValuePair("department", member.getDepartment() + ""));
                 name_value.add(new BasicNameValuePair("introduction", member.getIntroduction() + ""));
