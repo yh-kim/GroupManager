@@ -1,15 +1,14 @@
 package com.enterpaper.groupmanager;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
@@ -19,6 +18,8 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -29,17 +30,20 @@ import java.util.List;
 /**
  * Created by Kim on 2015-12-23.
  */
-public class AddMemberActivity extends Activity {
-    RadioButton rbDeveloper;
-    RadioGroup radioGroup;
-    Button btnAddMember, btnAddMemberCancel;
-    Member member;
-    EditText editId, editName, editIntroduction;
+public class SearchMemberActivity extends Activity {
+    EditText editSearch;
+    TextView tvSearchCount;
+    ImageView btnSearch;
+    ListView lvSearchMembers;
+    MemberAdapter adapter;
+    ArrayList<Member> arrMember = new ArrayList<>();
+    String keyword;
+    int count;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_member);
+        setContentView(R.layout.activity_search);
 
         // 폰트 설정
         SetFont.setGlobalFont(this, getWindow().getDecorView());
@@ -50,49 +54,35 @@ public class AddMemberActivity extends Activity {
     }
 
     private void initializeLayout(){
-        rbDeveloper = (RadioButton)findViewById(R.id.rbDeveloper);
-        radioGroup = (RadioGroup)findViewById(R.id.radioGroup);
-        btnAddMember = (Button)findViewById(R.id.btnAddMember);
-        btnAddMemberCancel = (Button)findViewById(R.id.btnAddMemberCancel);
-        editId = (EditText)findViewById(R.id.editId);
-        editName = (EditText)findViewById(R.id.editName);
-        editIntroduction = (EditText)findViewById(R.id.editIntroduction);
+        editSearch = (EditText)findViewById(R.id.editSearch);
+        btnSearch = (ImageView)findViewById(R.id.btnSearch);
+        lvSearchMembers = (ListView)findViewById(R.id.lvSearchMembers);
+        tvSearchCount = (TextView)findViewById(R.id.tvSearchCount);
+
+        // adapter 생성
+        adapter = new MemberAdapter(getApplicationContext(), R.layout.row_member, arrMember);
+
+        // adapter 연결
+        lvSearchMembers.setAdapter(adapter);
 
     }
 
     private void setListener(){
-        rbDeveloper.setChecked(true);
-
-        btnAddMember.setOnClickListener(new View.OnClickListener() {
+        btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RadioButton selectRadioButton = (RadioButton) findViewById(radioGroup.getCheckedRadioButtonId());
-                String idText = editId.getText().toString().trim();
-                String name = editName.getText().toString().trim();
-                String department = selectRadioButton.getText().toString();
-                String introduction = editIntroduction.getText().toString().trim();
-
-                if (idText.equals("") || name.equals("") || introduction.equals("")){
-                    Toast.makeText(getApplication(),"모든 항목을 입력해주세요",Toast.LENGTH_SHORT).show();
+                if(editSearch.getText().toString().length() == 0){
+                    Toast.makeText(getApplicationContext(),"검색어를 입력해주세요",Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if(idText.length() != 8){
-                    Toast.makeText(getApplication(),"올바른 학번을 입력해주세요",Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                arrMember.clear();
+                adapter.notifyDataSetChanged();
+                tvSearchCount.setText("");
 
-                int id = Integer.valueOf(idText);
-                member = new Member(id, name, department, introduction);
+                keyword = editSearch.getText().toString().trim();
 
-                new NetworkAddMember().execute();
-            }
-        });
-
-        btnAddMemberCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
+                new NetworkSearchMembers().execute();
             }
         });
     }
@@ -104,7 +94,7 @@ public class AddMemberActivity extends Activity {
     }
 
     // member add HTTP연결 Thread 생성 클래스
-    class NetworkAddMember extends AsyncTask<String, String, Integer> {
+    class NetworkSearchMembers extends AsyncTask<String, String, Integer> {
         private String err_msg = "Network error.";
 
         // JSON에서 받아오는 객체
@@ -124,13 +114,47 @@ public class AddMemberActivity extends Activity {
 
             // 지금 코드에서는 result가 0이면 정상적인 상황
             if (result == 0) {
-                finish();
-                return;
-            }
-            // 이미 있는 학번
-            else if(result == 3){
-                Toast.makeText(getApplicationContext(),"이미 등록되어 있는 학번입니다", Toast.LENGTH_SHORT).show();
-                editId.setTextColor(Color.rgb(221,67,58));
+                // JSON에서 받은 객체를 가지고 List에 뿌려줘야해
+                // jObject에서 데이터를 뽑아내자
+                try {
+                    // 가져오는 값의 개수를 가져옴
+                    count = jObjects.getInt("cnt");
+
+                    if(count == 0){
+                        Toast.makeText(getApplicationContext(),"검색결과가 없습니다",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    tvSearchCount.setText("일치항목(" + count +")");
+
+                    JSONArray ret_arr = jObjects.getJSONArray("ret");
+                    for (int index = 0; index < ret_arr.length(); index++) {
+                        JSONObject obj_boothIdeas = ret_arr.getJSONObject(index);
+
+                        int id = obj_boothIdeas.getInt("id");
+                        String name = obj_boothIdeas.getString("name");
+                        String date = obj_boothIdeas.getString("date");
+                        String department = obj_boothIdeas.getString("department");
+                        String introduction = obj_boothIdeas.getString("introduction");
+
+                        if(introduction.length() >10){
+                            introduction = introduction.substring(0,10) +"..";
+                        }
+
+                        // Item 객체로 만들어야함
+                        Member member = new Member(id,name,department,introduction);
+
+                        // Item 객체를 ArrayList에 넣는다
+                        arrMember.add(0,member);
+                    }
+
+
+                    // Adapter에게 데이터를 넣었으니 갱신하라고 알려줌
+                    adapter.notifyDataSetChanged();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 return;
             }
             // Error 상황
@@ -153,14 +177,10 @@ public class AddMemberActivity extends Activity {
                 List<NameValuePair> name_value = new ArrayList<NameValuePair>();
 
                 http_post = new HttpPost(
-                        "http://54.199.176.234/api/gravity_add_member.php");
+                        "http://54.199.176.234/api/gravity_search_members.php");
 
                 // data를 담음
-                name_value.add(new BasicNameValuePair("id", member.getId() + ""));
-                name_value.add(new BasicNameValuePair("id", member.getId() + ""));
-                name_value.add(new BasicNameValuePair("name", member.getName() + ""));
-                name_value.add(new BasicNameValuePair("department", member.getDepartment() + ""));
-                name_value.add(new BasicNameValuePair("introduction", member.getIntroduction() + ""));
+                name_value.add(new BasicNameValuePair("keyword", keyword));
 
                 UrlEncodedFormEntity entityRequest = new UrlEncodedFormEntity(
                         name_value, "UTF-8");

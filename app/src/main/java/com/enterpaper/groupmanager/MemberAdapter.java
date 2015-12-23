@@ -70,7 +70,7 @@ public class MemberAdapter extends ArrayAdapter<Member> {//LayoutInflater -> XML
         String introduction = member.getIntroduction();
 
         String inputId = "(" + id + ")";
-        if(department.equals("기획자")){
+        if(department.equals("기획")){
             holder.img.setImageResource(R.drawable.planner);
         }else if(department.equals("디자인")){
             holder.img.setImageResource(R.drawable.designer);

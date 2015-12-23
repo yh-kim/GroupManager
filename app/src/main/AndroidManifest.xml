@@ -23,6 +23,9 @@
         <activity android:name=".AdjustMemberActivity">
 
         </activity>
+        <activity android:name=".SearchMemberActivity">
+
+        </activity>
     </application>
 
 </manifest>

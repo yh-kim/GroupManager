@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#ffffff">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#811688">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="25dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:longClickable="false"
+            android:src="@drawable/logo"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
+
+    </RelativeLayout>
 
     <EditText
         android:id="@+id/adjustId"
@@ -28,21 +46,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="개발자" />
+            android:text="개발" />
 
         <RadioButton
             android:id="@+id/rbAdjustDesigner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="디자이너" />
+            android:text="디자인" />
 
         <RadioButton
             android:id="@+id/rbAdjustPlanner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="기획자" />
+            android:text="기획" />
 
     </RadioGroup>
 

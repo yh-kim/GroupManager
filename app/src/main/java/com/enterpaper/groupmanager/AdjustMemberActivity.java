@@ -43,6 +43,9 @@ public class AdjustMemberActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_adjust_member);
 
+        // 폰트 설정
+        SetFont.setGlobalFont(this, getWindow().getDecorView());
+
         initializeLayout();
 
         // intent에 담은 데이터 가져오기
@@ -64,7 +67,7 @@ public class AdjustMemberActivity extends Activity {
         adjustIntroduction.setText(introduction);
         if(department.equals("디자인")){
             rbAdjustDesigner.setChecked(true);
-        }else if(department.equals("기획자")){
+        }else if(department.equals("기획")){
             rbAdjustPlanner.setChecked(true);
         }else{
             rbAdjustDeveloper.setChecked(true);
@@ -103,9 +106,6 @@ public class AdjustMemberActivity extends Activity {
                     Toast.makeText(getApplication(), "올바른 학번을 입력해주세요", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                if (department.equals("디자이너"))
-                    department = "디자인";
 
                 int id = Integer.valueOf(idText);
                 member.setId(id);

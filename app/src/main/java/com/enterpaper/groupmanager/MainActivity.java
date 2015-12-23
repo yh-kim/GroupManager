@@ -11,7 +11,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
@@ -42,6 +44,8 @@ public class MainActivity extends ActionBarActivity {
     AlertDialog mDialog;
     int count;
     int selectMemberNum;
+    ImageView ivSearch;
+    TextView tvMemberNum;
 
     @Override
     protected void onResume() {
@@ -96,7 +100,8 @@ public class MainActivity extends ActionBarActivity {
 
         // adapter 연결
         lvMembers.setAdapter(adapter);
-
+        ivSearch = (ImageView)findViewById(R.id.ivSearch);
+        tvMemberNum = (TextView)findViewById(R.id.tvMemberNum);
     }
 
     private void setListener(){
@@ -110,6 +115,15 @@ public class MainActivity extends ActionBarActivity {
                 Intent itAddMember = new Intent(getApplicationContext(), AddMemberActivity.class);
                 startActivity(itAddMember);
                 overridePendingTransition(0, 0);
+            }
+        });
+
+        ivSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent itsearch = new Intent(getApplicationContext(), SearchMemberActivity.class);
+                startActivity(itsearch);
+                overridePendingTransition(0,0);
             }
         });
 
@@ -203,6 +217,8 @@ public class MainActivity extends ActionBarActivity {
                 try {
                     // 가져오는 값의 개수를 가져옴
                     count = jObjects.getInt("cnt");
+
+                    tvMemberNum.setText("인원(" + count +")");
 
                     JSONArray ret_arr = jObjects.getJSONArray("ret");
                     for (int index = 0; index < ret_arr.length(); index++) {
